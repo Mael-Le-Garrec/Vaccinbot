@@ -35,7 +35,7 @@ SELECTED_VACCINES = ["P", "M", "AZ", "J", "mRNA"]
 # Argument parsing
 def get_args():
     parser = argparse.ArgumentParser(description="A bot that automatically fetches date from ViteMaDose and finds appointments within 24h.")
-    parser.add_argument("--interval", type=float, help="Time in minutes between queries to ViteMaDose. Default: " + str(PING_INTERVAL_MINUTES), default=PING_INTERVAL_MINUTES)
+    parser.add_argument("--secs", type=float, help="Time in minutes between queries to ViteMaDose. Default: " + str(PING_INTERVAL_MINUTES), default=PING_INTERVAL_MINUTES)
     parser.add_argument("--slack-token", type=argparse.FileType(), help="Path to file containing a slack token (activates Slack bot feature).")
     parser.add_argument("--free-mobile-user", type=str, help="User to be used with the Free Mobile SMS API")
     parser.add_argument("--free-mobile-password", type=argparse.FileType(), help="Path to file containing a Free mobile password.")
@@ -56,7 +56,6 @@ def get_args():
 
 args = get_args()
 
-PING_INTERVAL_MINUTES = args.interval
 MY_LOCATION = args.location
 MAX_DISTANCE = args.max_distance
 SELECTED_VACCINES = [VACCINES[v] for v in args.vaccines]
@@ -98,7 +97,7 @@ while(True):
 
   ## fetch and parse
   for dep in DEPARTMENTS:
-    print("Searching in " + dep + ", " + department_list[dep])
+    #print("Searching in " + dep + ", " + department_list[dep])
     now = datetime.now(timezone.utc)
     response = requests.get("https://vitemadose.gitlab.io/vitemadose/" + dep + ".json")
     responses[dep] = response
@@ -165,7 +164,7 @@ while(True):
           for key, value in zip(table_header, appointment):
             text += f'{key}: {value}\n'
           text += '\n'
-        return text
+        return quote(text)
 
       print("Sending SMS…")
       base = "https://smsapi.free-mobile.fr/sendmsg"
@@ -177,5 +176,5 @@ while(True):
         print("Error while sending SMS: wrong credentials")
 
 
-  print("Sleeping, back in", PING_INTERVAL_MINUTES, " minutes")
-  time.sleep(60*PING_INTERVAL_MINUTES)
+  print("Sleeping, back in", args.secs, "seconds")
+  time.sleep(args.secs)
